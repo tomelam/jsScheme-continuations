@@ -1,0 +1,148 @@
+;;;; -*- scheme -*-
+;;;;
+;;;; insert-branch.txt
+;;;;
+;;;; FIXME: This version is to add contents to an AccordionPane.  For
+;;;; this, it needs to be able to do the same things that Dojo mark-up
+;;;; for AccordionPanes does: (1) add HTML (including the degenerate
+;;;; case of text) and (2) load from a (specially parsed) URL.
+;;;; NOT DONE YET.
+
+;; Copyright (c) 2010 Tom Elam
+;;
+;; Permission is hereby granted, free of charge, to any person
+;; obtaining a copy of this software and associated documentation
+;; files (the "Software"), to deal in the Software without
+;; restriction, including without limitation the rights to use, copy,
+;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+;;
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
+
+(define (insert-dom-branch branch insertion-point)
+  (if (list? branch)
+      (let* ((component (car branch))
+	     (compon-type (car component))
+	     (compon-param-list (cdr component))
+	     (compon-info (car compon-param-list)) ;; For a dojo, dijit, or dojox widget this is the widget type.
+	     (node ())
+	     (widget ()))
+
+	(cond
+
+	 ;;;;
+	 ;;;; Check for a TEXT node.
+	 ;;;;
+	 ((string=? compon-type "text")
+	  (set! node (js-eval (string-append "document.createTextNode('" compon-info "')")))
+	  (js-invoke insertion-point "appendChild" node))
+	 
+	 ;;;;
+	 ;;;; Check for content to be set with a dijit's attr method.
+	 ;;;;
+	 ;;FIXME: node is still null at the end of this clause, but
+	 ;;is that okay? node is used at the end of this function!
+	 ((string=? compon-type "content") ;Working Time Machine backup 4 Dec, 21:25 and about 22:15
+	  (set! widget (js-call (js-eval "dijit.byNode") insertion-point))
+	  (if (string? compon-info)
+	      (js-invoke widget "attr" "content" compon-info)
+	      (let ((moveable-node ())
+		    (content-node ()))
+		(set! moveable-node (js-eval "document.createElement('div')"))
+		;;(js-invoke *zen-node* "appendChild" moveable-node)
+		(js-invoke *toolbox-insertion-point* "appendChild" moveable-node)
+		;; Have to put node into DOM to be able to locate it by id,
+		;; and insert-dom-branch locates nodes by id.
+		(js-invoke widget "attr" "content" moveable-node) ;Moves the DIV node!
+		(set! content-node (insert-dom-branch compon-info moveable-node)))))
+
+	 ;;;;
+	 ;;;; FIXME: TEST THIS NEW VERSION. Checks for content to be
+	 ;;;; set with a dijit's attr method.  This case was developed
+	 ;;;; to allow TEXT for a plain SPAN element to fall into the
+	 ;;;; right place in TabContainer tree, with a little help
+	 ;;;; finding the right signature of ancestor nodes. (The
+	 ;;;; associated tool in the toolbox would be labelled
+	 ;;;; something like 'Label for Tab'.  The tool would tell
+	 ;;;; insert-dom-branch to insert a string as a "subpart" of a
+	 ;;;; DIV of class "DijitTabInnerDiv", just inside a SPAN.)
+	 ;;;; It must be flexible about how many nodes upward it looks
+	 ;;;; and how many nodes downward because the user can click a
+	 ;;;; bit off centre in the tab, missing the SPAN but
+	 ;;;; targetting an ancestor of the SPAN.
+
+	 ;;;;
+	 ;;;; (("subpart" "Tab 2" insertion-point "div.DijitTabInnerDiv" "span"))  ;; This form is only to insert a string.
+	 ;;;; (("subpart" (("div" (("stylex" "{height:'893px',width:'100%'}")))))) ;; This form can insert a tree. FIXME?
+	 ((string=? compon-type "subpart")
+	  (display "subpart ")
+	  (display component)
+	  (newline)
+	  (let* ((insertion-point-locater (cadr compon-param-list))
+		 (insertion-rule (caddr compon-param-list)))
+	    (display insertion-point-locater)
+	    (display insertion-rule)
+	    (newline)
+	    ;; Make sure we can find the right place for the widget subpart in the specified target.
+	    ;; To do this checking, we have to search upwards in the DOM tree, then downwards in the tree
+	    ;; for the expected DOM nodes (based on tag name and/or CSS class).
+	    (js-call (js-eval "zen1.setWidgetSubpart")
+		     insertion-point
+		     (js-call (js-eval "zen1.makeArray") compon-info insertion-point-locater insertion-rule))))
+	  
+	 ;;;;
+	 ;;;; Check for a dojo, dijit, or dojox widget.
+	 ;;;;
+	 ((member compon-type '("dojo" "dijit" "dojox"))
+	  (set! compon-param-list (cdr compon-param-list))
+	  (let* ((dojo-lib compon-type)
+		 (widget-type compon-info)
+		 ;;(widget-params (cadr compon-param-list))
+		 ;;(scheme-callback (caddr compon-param-list))
+		 ;;(class (cadddr compon-param-list))
+		 ;;(insertion-rule (cadr (cdddr compon-param-list))))
+		 (widget-params "{}")
+		 (scheme-callback ())
+		 (class ())
+		 (insertion-rule ())
+		 (len (length compon-param-list)))
+	    ;; I wish I knew a better way to pick off values from a list and assign them to a set of variables.
+	    (if (> len 3)
+		(set! insertion-rule (cadddr compon-param-list)))
+	    (if (> len 2)
+		(set! class (caddr compon-param-list)))
+	    (if (> len 1)
+		(set! scheme-callback (cadr compon-param-list)))
+	    (if (> len 0)
+		(set! widget-params (car compon-param-list)))
+	    (display "compon-param-list => ") (display compon-param-list) (display ", widget-type => ") (display widget-type) (display ", widget-params => ") (display widget-params)
+	    (display ", scheme-callback => ") (display scheme-callback) (display ", class => ") (display class) (display ", insertion-rule => ") (display insertion-rule) (newline)
+	    (set! node (insert-dojo-widget insertion-point dojo-lib widget-type widget-params scheme-callback class insertion-rule))
+	    ;;(js-eval "console.debug('returned from insert-dojo-widget')")
+	    ;;(js-call (js-eval "zen1.startupContainer") node) ;Startup container after its children.
+	    (js-call (js-eval "zen1.startupContainer") node) ;Startup container after its children.
+	    ;;(js-eval "console.debug('returned from startupContainer')")
+	    ))
+	 
+	 ;;;;
+	 ;;;; The default is an HTML tag.
+	 ;;;;
+	 (else
+	  (set! node (js-eval (string-append "document.createElement('" compon-type "')"))) ; Here compon-type holds a tag.
+	  (set-attrs! node compon-info)
+	  (js-invoke insertion-point "appendChild" node)))
+	
+	(set! insertion-point node)
+	(insert-dom-branches (cdr branch) insertion-point))))
+	;;(js-call (js-eval "zen1.startupAC") node)))) ;FIXME: Yuck! Purpose: startup parent widget after children.

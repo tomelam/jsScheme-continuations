@@ -1,0 +1,57 @@
+;;;; -*- scheme -*-
+;;;;
+;;;; record-insert.txt
+;;;;
+
+;; Copyright (c) 2010 Tom Elam
+;;
+;; Permission is hereby granted, free of charge, to any person
+;; obtaining a copy of this software and associated documentation
+;; files (the "Software"), to deal in the Software without
+;; restriction, including without limitation the rights to use, copy,
+;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+;;
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
+
+(define *body* (js-eval "document.body"))
+(define *body-children* (js-eval "document.body.childNodes"))
+
+;;;; When a node is inserted into the DOM, its relative position
+;;;; should be remembered using a position vector.  In this context, a
+;;;; vector is the recursive concatonation of nodeList indices.  Such
+;;;; an individual index can be used to dereference a node.  An
+;;;; example position vector to dereference a node with respect to the
+;;;; top node (the body node) would look like (0 8 3), which means
+;;;; 'the fourth node of the ninth node of the first node'.
+;;;; FIXME: Why not use js-call to set node (in 2 places)?
+
+(define (record-insert-dom-branch branch insertion-point)
+  (if (list? branch)
+      (begin
+        (let* ((location ()))
+	  (set! location (locate-node insertion-point *body-children*))
+	  (set! *user-config*
+		(append *user-config*
+			(list (list 'replay-insert-dom-branch (list quote branch) (list quote location)))))
+	  (insert-dom-branch branch insertion-point)))))
+
+(define *user-config-saved?* #f)
+(define (save-user-config)
+  (set-prop! (js-eval "document.getElementById('txt')") "lispForm" (form->string2 *user-config*))
+  (set! *user-config-saved?* #t))
+(define (delete-user-config)
+  (set-prop! (js-eval "document.getElementById('txt')") "lispForm" "")
+  (set! *user-config* '(begin))
+  (set! *user-config-saved?* #f))

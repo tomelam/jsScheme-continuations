@@ -1,0 +1,51 @@
+INSTALLATION.txt - How to install jsScheme
+Copyright (C) 2009  Tom Elam
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without any warranty.
+
+Obtain a snapshot of jsScheme from
+http://www.tomelam.com/javascript-scheme/downloads/ .  Unarchive it
+somewhere: either within your server's document root or, if you are
+only going to load the HTML files locally in your browser, anywhere on
+your computer.
+
+There are three HTML files created to load jsScheme.js and
+initScheme.js and then initialise jsScheme.js: scheme_dojo.html uses
+Dojo, scheme_jquery.html uses jQuery, and scheme_no_jslib.html uses no
+JavaScript library and provides fewer features (for example, no
+loading or evaluating of Scheme files).  If you use a non-cross-domain
+installation of Dojo or jQuery, you must download and install it and
+modify an HTML file to use it.  jsScheme has been at least briefly
+tested with Dojo 1.3.1 and jQuery 1.3.2 in Internet Explorer 6 and 8,
+Firefox 3 (Mac and Windows), Safari 4 (Mac and Windows), Opera 9.26
+(Windows), Rhino 1.7, Google Chrome 2.0.172.33 for Windows, and Google
+Chrome 3.0.190.0 for the Mac (from Chrome's developer preview
+channel). It runs in all these JavaScript browsers/environments.
+
+To run jsScheme with Dojo in Rhino, follow the instructions at
+http://www.dojotoolkit.org/forum/dojo-core-dojo-0-9/
+dojo-core-support/run-dojo-rhino [URL broken across lines].  Basically
+what that says is build a version of Dojo using the rhino profile.
+After creating a rhino-profile build of Dojo, the following will work,
+given that you have placed dojo and js.jar appropriately:
+
+bash-3.2$ java -jar js.jar
+Rhino 1.7 release 2 2009 03 22
+js> load(['dojo/dojo/dojo.js'])
+js> load(['jsScheme.js'])
+js> var jslib_type="dojo"; 
+js> load(['initScheme.js']);
+js> init();
+[jsScheme prints its banner]
+js> callEval('(+ 3 4)').result;
+7
+
+Here are some debugging tips.  First of all, the use of Firebug, the
+free-software Firefox extension, is very highly recommended.  Many web
+developers swear by it.  When Firebug is not available, the Dojo
+configuration property 'isDebug' can be set to true to enable Firebug
+Lite, which is bundled with Dojo.  Visit http://dojotoolkit.org for
+details.  Visit http://www.getfirebug.com for more information.

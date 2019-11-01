@@ -1,0 +1,116 @@
+<!--
+changelog.html - History of changes to jsScheme and jsScheme
+Copyright (C) 2009  Tom Elam
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without any warranty.
+-->
+<html>
+<head>
+<title>Change Log</title>
+<script type="text/javascript">
+m = function(t,d) {
+ // window.navigate("mailto:"+t+"@"+d);
+  window.location="mailto:"+t+"@"+d;
+}
+</script>
+</head>
+<h3>Change Log</h3>
+
+<dl>
+
+<dt>27 June 2009, jsScheme revision 0.1-tae</dt>
+
+<dd>
+
+  <p> Changes by <a href="http://www.tomelam.com">Tom
+Elam</a>. <em>Refactoring.</em> Created a modified version of the
+program previously known as 'javascript-scheme' or 'jsScheme' and
+named the new version 'jsScheme', with all features retained except
+for the Scheme library functions (see below). The 'SA' signifies
+'standalone', since the JavaScript can now be used independently of
+the HTML to which is was previously bound. As a result of this
+separation the JavaScript can now be embedded in any web page or can
+used in a non-browser-based JavaScript interpreter like Rhino. Created
+three versions of a demonstration HTML file: one to use jQuery, one to
+use Dojo, and one, with a degraded user interface, to use
+independently of any JavaScript library. These three files show
+various ways Scheme applications running on jsScheme could be hosted
+and debugged. For example, with all the checkboxes unchecked, there is
+no visible output, hence no dependency upon the browser DOM for
+output. There is no dependency upon the browser DOM for input because
+the input is passed as a string to callEval (or, equivalently,
+clickEval).
+
+  <p> <em>Miscellaneous changes.</em> Exposed the internal trace
+feature of jsScheme by attaching a checkbox with 'onchange' handler
+to switch it on and off. (This is the same trace feature enabled by
+the evaluation of the Scheme form '(trace #t)'.) Split the Scheme
+library functions off into a separate, optional file in preparation
+for their replacement, to allow Scheme programs to use the
+interpreter/compiler without being GPL licensed themselves. Defined
+all functions in the interpreter anonymously and assigned their values
+to variables (like 'foo = function(...) {...}')  in preparation for
+allowing the JavaScript to be required as a Dojo module, useful for
+cross-domain loading, as from a content delivery network (CDN) like
+Google's Ajax library CDN. The definition of the Continuation function
+also had to be moved to make this work.
+
+  <p> jsScheme can be downloaded from <a
+ href="http://www.tomelam.com/javascript-scheme/downloads/"
+target="_blank">here</a>. Send email to <a
+ href="mailto:tomelam@gmail.com">Tom Elam</a> for the darcs patches to
+Chris Double's (04 May 2006) version. More information will eventually
+be available <a href="http://www.tomelam.com/javascript-scheme/"
+target="_blank">here</a> (but not currently).
+
+</dd>
+
+<dt>About April 2008, split-apart version of javascript-scheme</dt>
+
+<dd>
+
+  <p> Changes by Samik Chakraborty. Got a prototype version of a
+standalone, embeddable jsScheme to evaluate Scheme expressions, with
+some features lost.
+
+</dd>
+
+<dt>04 May 2006, javascript-scheme</dt>
+
+<dd>
+  
+  <p> Added <a href="http://jquery.com/">jQuery</a> for Ajax
+  support. Split 'example' source into a seperate file and load it via
+  Ajax. Added Scheme Ajax function 'ajax-get'. Added a simple <a
+   href="http://lambda-the-ultimate.org/node/841">termite-style</a>
+  concurrency library. <a
+   href="http://www.bluishcoder.co.nz/2006/05/lightweight-threads-in-browser.html">More
+  details here</a>.
+
+</dd>
+
+<dt>03 May 2006, javascript-scheme</dt>
+
+<dd>
+<p>
+Changes by <a href="http://www.bluishcoder.co.nz">Chris
+Double</a>. Added Firefox compatibility and set-timeout!. For more
+details see <a href="http://www.bluishcoder.co.nz/2006/05/scheme-implementation-in-javascript.html">my weblog entry</a>.
+</dd>
+
+<dt>Original javascript-scheme</dt>
+
+<dd>
+<p>
+Original by <a href=
+"javascript:m('alex','alexgraf.com')">Alex Yakovlev</a> from <a
+href="http://alex.ability.ru/scheme.html">http://alex.ability.ru/scheme.html</a>.
+</dd>
+
+</dl>
+
+</body>
+</html>

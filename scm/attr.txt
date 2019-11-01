@@ -1,0 +1,26 @@
+;;;; -*- scheme -*-
+;;;;
+;;;; attr.txt
+;;;;
+
+;;;; Careful!  The setAttribute method won't work correctly
+;;;; cross-browser for styles.
+(define (set-attr! node name-and-value)
+  (let ((name (car name-and-value))
+	(value (cadr name-and-value)))
+    (cond
+     [(string=? name "class")
+      (js-call (js-eval "dojo.addClass") node value)]
+     [(string=? name "stylex")
+      ;;(display "cond stylex")
+      (set-style! node value)]
+     [else
+      (js-invoke node "setAttribute" (car name-and-value) (cadr name-and-value))])))
+(define (set-attrs! node attrs)
+  (map (lambda (attr)
+         (set-attr! node attr))
+       attrs))
+(define (set-style! node value)
+  (let ((o ()))
+  (set! o (js-eval (string-append "junk = " value)))
+  (js-call (js-eval "dojo.style") node (js-eval "junk"))))

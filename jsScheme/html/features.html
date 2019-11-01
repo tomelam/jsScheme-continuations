@@ -1,0 +1,136 @@
+<!--
+features.html - Features of jsScheme
+Copyright (C) 2009  Tom Elam
+Copyright (C) 2006  Chris Double
+Copyright (C) 2003  Alex Yakovlev
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without any warranty.
+-->
+<html>
+<head>
+<title>jsScheme - Features</title>
+<style type="text/css">
+TABLE { background: #A0A0A0; }
+TD { background: white; }
+.button { width: 100 }
+</style>
+</head>
+<body>
+<h1>jsScheme - Features</h1>
+(Last Update 04 May 2006)
+<p>
+<a href="changelog.html" target="_blank">Changelog</a> (Last Update 24 June 2009)
+<h3>Features:</h3>
+<ul>
+<li>Proper tail-recursion</li>
+<li>First-class continuations with even
+<code>dynamic-wind</code></li>
+<li>Boolean, string, number, char, and vector data types (no
+complex / rational numbers)</li>
+<li>Limited <code>syntax-rules</code> transformer (written in
+Scheme; no nested ellipsis ('...') and vectors support)</li>
+<li>Optional just-in-time compilation to javascript (does not
+support continuations; library can be pre-compiled with
+<code>(compile-lib)</code> and inserted in <code>init()</code> -
+this will speed up loading in price of ~200Kb; <a href=
+"http://www.bluishcoder.co.nz/jsscheme/javascript-scheme.tar.gz">
+download the old version</a>)</li>
+<li>Almost no error checking</li>
+<li>No I/O like <code>load</code>, <code>read-char</code>,
+<code>open-input-file</code>, etc.</li>
+<li>Limited <code>values</code> support (only first value is
+displayed; all continuations may receive multiple values, not only
+those created with <code>call-with-values</code>):
+<pre>
+(values 1 2 3)  =&gt;  1
+(+ (values 1 2 3))  =&gt;  6
+(list (values 1 2 3))  =&gt;  (1 2 3)
+(call-with-values (lambda () (values 1 2 3)) +)  =&gt;  6
+</pre></li>
+<li>Predicates like <code>=</code> and <code>string&gt;?</code>
+takes only 2 arguments, but can be extended in this way:
+<pre>
+(define &lt; ((lambda() (define old&lt; &lt;)
+  (lambda (x y . rest)
+    (if (old&lt; x y)
+        (if (null? rest)
+            #t
+            (apply &lt; y rest))
+        #f)))))
+(&lt; 1 2 3 4 5)  =&gt;  #t
+(&lt; 1 2 3 4 3)  =&gt;  #f
+</pre></li>
+<li><code>map</code> works on improper lists:
+<pre>
+(map + '(1 2 . 3) '(40 20 . 10))  =&gt;  (41 22 . 13)
+(map + 14 9)  =&gt;  23
+</pre></li>
+<li>Most of R<sup>5</sup>RS features / library is implemented</li>
+<li>Passes all <code>r5rs_pitfall.scm</code> tests (included in
+SISC)</li>
+<li>Strings are immutable; no <code>string-fill!</code> and
+<code>string-set!</code></li>
+<li><code>begin</code> is a primitive language expression (same as
+<code>lambda</code>, <code>if</code>, <code>define</code>,
+<code>set!</code> and <code>quote</code>) not derived/library as
+R<sup>5</sup>RS defines; moreover, <code>lambda</code> bodies with
+several statements are enclosed in <code>begin</code> in internal
+representation to emphasize that they express different concepts -
+the first is a function and the second is an operators
+sequencing</li>
+<li>Written 23 July - 8 August, 2003</li>
+<li>Copyright (c) 2003 by Alex Yakovlev. All rights reserved.</li>
+<li>Can be freely redisributed under <a href=
+"http://www.gnu.org/licenses/gpl.html">GPL</a> terms.</li>
+<li>Tested in IE6 and Opera7</li>
+</ul>
+<h3>Links:</h3>
+<ul>
+<li><a href="http://www.scheme.com/tspl2d/">R. Kent Dybvig, The
+Scheme Programming Language, Second Edition</a></li>
+<li><a href=
+"http://www.schemers.org/Documents/Standards/R5RS/">Revised<sup>5</sup>
+Report on the Algorithmic Language Scheme</a>
+(R<sup>5</sup>RS)</li>
+<li><a href="http://mitpress.mit.edu/sicp/sicp.html">Structure and
+Interpretation of Computer Programs</a></li>
+<li><a href="http://okmij.org/ftp/Scheme/">Oleg Kiselyov Scheme
+page</a></li>
+<li><a href="http://www.pair.com/lisovsky/scheme/">Kirill Lisovsky
+Scheme page</a></li>
+<li><a href="http://www.plt-scheme.org/">PLT Scheme</a></li>
+<li><a href="lisp.html">Alex's old Lisp interpreter in C</a></li>
+</ul>
+<p>other implementations in JS:</p>
+<ul>
+<li><a href="http://www.bluetail.com/~luke/jscm/repl.html">by Luke
+Gorrie</a></li>
+<li><a href="http://www.crockford.com/javascript/scheme.html">by
+Douglas Crockford</a></li>
+<li><a href="http://ganley.org/software/jslisp.html">by Joe
+Ganley</a> (Lisp, not Scheme)</li>
+</ul>
+<p>in Java:</p>
+<ul>
+<li><a href="http://www.gnu.org/software/kawa/">Kawa</a> (by Per
+Bothner), both interpreter and compiler to java bytecode</li>
+<li><a href="http://www.alphaworks.ibm.com/formula/skij/">Skij</a>
+- by IBM T.J. Watson Research Center, the same group who developed
+<a href=
+"http://www.ibm.com/developerworks/oss/jikes/">Jikes</a></li>
+<li><a href="http://sisc.sourceforge.net/">SISC - Second
+Interpreter of Scheme Code</a>, R5RS compliant</li>
+<li><a href="http://www-sop.inria.fr/mimosa/fp/Bigloo/">Bigloo
+compiler</a> (very efficient) - can produce java bytecode</li>
+</ul>
+</td>
+</tr>
+</table>
+</td>
+<td valign="top">
+
+</body>
+</html>

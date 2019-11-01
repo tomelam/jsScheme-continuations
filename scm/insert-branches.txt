@@ -1,0 +1,61 @@
+;;;; -*- scheme -*-
+;;;;
+;;;; insert-branches.txt
+;;;;
+
+;; Copyright (c) 2010 Tom Elam
+;;
+;; Permission is hereby granted, free of charge, to any person
+;; obtaining a copy of this software and associated documentation
+;; files (the "Software"), to deal in the Software without
+;; restriction, including without limitation the rights to use, copy,
+;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+;;
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
+
+(define (insert-dom-branches branches insertion-point)
+  (map (lambda (branch)
+         (insert-dom-branch branch insertion-point))
+       branches))
+(define (record-insert-dom-branches branches insertion-point)
+  (map (lambda (branch)
+	 ;;FIXME: Not needed for the version of Zen that returns composed
+	 ;;mark-up to a caller.  Replace it with a call to
+	 ;;insert-dom-branch.
+         ;;(insert-dom-branch branch insertion-point))
+         (record-insert-dom-branch branch insertion-point))
+       branches))
+(define (insert-dom-branch-at-selection branch)
+  (display "In insert-dom-branch-at-selection: branch => ")
+  (display branch)
+  (newline)
+  (let ((selection ()))
+    (set! selection (js-eval "zen1.lastSelectedNode"))
+    ;;FIXME: Not needed for the version of Zen that returns composed
+    ;;mark-up to a caller.  Replace it with a call to
+    ;;insert-dom-branch.
+    ;;(insert-dom-branch branch selection)))
+    (record-insert-dom-branch branch selection)))
+(define (insert-dom-branches-at-selection branches)
+  (display "In insert-dom-branches-at-selection: branches => ")
+  (display branches)
+  (newline)
+  (let ((selection ()))
+    (set! selection (js-eval "zen1.lastSelectedNode"))
+    ;;FIXME: Not needed for the version of Zen that returns composed
+    ;;mark-up to a caller.  Replace it with a call to
+    ;;insert-dom-branches.
+    ;;(insert-dom-branches branches selection)))
+    (record-insert-dom-branches branches selection)))

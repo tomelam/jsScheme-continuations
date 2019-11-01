@@ -1,0 +1,63 @@
+;;;; -*- scheme -*-
+;;;;
+;;;; locate-node.txt
+;;;;
+
+;; Copyright (c) 2010 Tom Elam
+;;
+;; Permission is hereby granted, free of charge, to any person
+;; obtaining a copy of this software and associated documentation
+;; files (the "Software"), to deal in the Software without
+;; restriction, including without limitation the rights to use, copy,
+;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+;;
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
+
+;; A return value of 0 (zero) means the node was not found in the list.
+(define (js-list-position node node-list)
+  (let ((js-obj 0))
+    (if (js-call (js-eval "zen1.listPosition") node node-list)
+	(set! js-obj (js-call (js-eval "zen1.listPosition") node node-list)))
+    js-obj))
+(define (js-aref idx node-list)
+  (js-call (js-eval "zen1.arefNodeList") idx node-list))
+
+;; Return a position vector for the passed node. The node-list is
+;; passed so that the function can be recursive.  When recursed, it
+;; refers to a sublevel being examined.  When returning from a
+;; sublevel the result will be prepended to the index of the current
+;; branch being examined.  Or something like all that.
+(define (locate-node node node-list)
+  (let ((list-length (js-call (js-eval "zen1.nodeListLength") node-list)))
+    (if (> list-length 0)
+	(let ((idx 0)
+	      (child-node-list ())
+	      (vector ())
+	      (result ())
+	      (child ()))
+	  (if (> (set! idx (js-list-position node node-list)) 0)
+	      (list (- idx 1))
+	      (begin
+		(let loop ((idx1 (- (js-call (js-eval "zen1.nodeListLength") node-list) 1)))
+		  (if (< idx1 0)
+		      (set! result ())
+		      (begin
+			(set! child (js-aref idx1 node-list))
+			(set! child-node-list (get-prop child "childNodes"))
+			(if (not (null? (set! vector (locate-node node child-node-list))))
+			    (set! result (append (list idx1) vector))
+			    (loop (- idx1 1))))))
+		result)))
+	())))

@@ -1,0 +1,84 @@
+;;;; -*- scheme -*-
+;;;;
+;;;; insert-dojo-widget.txt
+;;;;
+
+;; Copyright (c) 2010 Tom Elam
+;;
+;; Permission is hereby granted, free of charge, to any person
+;; obtaining a copy of this software and associated documentation
+;; files (the "Software"), to deal in the Software without
+;; restriction, including without limitation the rights to use, copy,
+;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+;;
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
+
+(define (insert-dojo-widget insertion-point dojo-lib widget-type widget-params scheme-callback class insertion-rule)
+  (let ((id (js-eval "dojo.dnd.getUniqueId()"))
+	(new-widget '())
+	(dom-node '())
+	(parent-node '())
+	(parent-widget '())
+	(dijit-by-node '()))
+    
+    ;;(js-eval (string-append "console.debug('insert-dojo-widget: widget-type = ' + " widget-type ")"))
+    (js-invoke insertion-point "setAttribute" "id" id)
+    (set! new-widget (js-eval (string-append "new " dojo-lib "." widget-type "(" widget-params ", dojo.byId('" id "'))")))
+    ;;Invoke startup here?
+    (set! dom-node (get-prop new-widget "domNode"))
+    (set! parent-node (get-prop dom-node "parentNode")) ; We want to use this; there *is* a parentNode.
+    (set! dijit-by-node (js-eval "dijit.byNode"))
+    (if (js-call dijit-by-node parent-node)
+	(begin
+	  (set! parent-widget (js-call dijit-by-node parent-node))
+	  (if parent-widget
+	      (if (get-prop parent-widget "addChild")
+		  (js-invoke parent-widget "addChild" new-widget))))) ;; Else there is no parent-widget
+    (set-prop! dom-node "lispForm" (form->string scheme-callback))
+    ;;(set! *insertion-rule-node* (js-eval "document.getElementById('insertionRule')"))
+    ;;(newline)
+    ;;FIXME: Hey! It's way too late to set an insertion rule! The widget is already inserted!
+    ;;FIXME: See Manager.js and dojo.txt (where insert-dom-branch-at-selection appears).
+    ;;FIXME: The insertion rule should be an argument to insert-dom-branch-at-selection, not one to insert-dojo-widget!
+    ;;FIXME: Oops! That doesn't work either! The insertion rule should be stored just before, during, or after zen1.storeSexp is called.
+    (if (null? insertion-rule)
+	(begin
+	  (display "insertion-rule is null. Setting it to the null string.")
+	  (newline)
+	  (set-prop! dom-node "insertionRule" ""))
+	(begin
+	  (display "insertion-rule is not null")
+	  (newline)
+	  (set-prop! dom-node "insertionRule" insertion-rule)))
+    (if (and (not (null? class)) (not (string=? class ""))) ;FIXME: The caller ensures not null, for serialisation?
+	(js-call (js-eval "dojo.addClass") dom-node class))
+    ;; My previous strategy: After an element is added, start up its child, if the child is an AccordionContainer.
+    ;; This protocol would get the AccordionContainer started up if it is enclosed in another widget.
+    ;; 20081202: FIXME: If an AccordionContainer is started up before any AccordionPanes are added to it, it won't
+    ;;           work. Instead, only start up an AccordionContainer after the first AccordionPane is added to it.
+    ;;           So only start up the AccordionContainer after the first AccordionPane is added to it.
+    ;; ac=dojo.byId('dojoUnique9')
+    ;; dijit.byNode(ac).startup()
+    (if new-widget
+	(if (get-prop new-widget "startup")
+	    (if (string=? widget-type "layout.AccordionContainer")
+		(begin
+		  ;;(js-eval "console.debug('new widget is AccordionContainer; avoiding startup')")
+		  )
+		(begin
+		  ;;(js-eval "console.debug('new widget is *not* an AccordionContainer; invoking startup')")
+		  (js-invoke new-widget "startup"))))
+	(display "### ERROR: could not instantiate new-widget!!!"))
+    dom-node))
